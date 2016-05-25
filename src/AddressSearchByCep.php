@@ -9,6 +9,7 @@
 namespace wbraganca\correios;
 
 use Yii;
+use SoapFault;
 use yii\web\Response;
 use yii\web\NotFoundHttpException;
 use wbraganca\correios\CepValidator;
@@ -22,41 +23,6 @@ use wbraganca\correios\AddressSearchBase;
 class AddressSearchByCep extends AddressSearchBase
 {
     /**
-     * Parse html content and returning cep data
-     * @param string $html
-     * @return array
-     */
-    private function parseHTML($html)
-    {
-        $output = [
-            'result' => 0,
-            'result_text' => Yii::t('wb_correios', 'Address not found.')
-        ];
-        $pattern = '/<table border="0" cellspacing="1" cellpadding="5" bgcolor="gray">(.*?)<\/table>/is';
-
-        if ($html && preg_match($pattern, $html, $matches)) {
-            $domDoc = new \DOMDocument();
-            if ($domDoc->loadHTML($matches[0])) {
-                $rows = $domDoc->getElementsByTagName('tr');
-                foreach ($rows as $tr) {
-                    $cols = $tr->getElementsByTagName('td');
-                    $output = [
-                        'location' => $cols->item(0)->nodeValue,
-                        'district' => $cols->item(1)->nodeValue,
-                        'city' => $cols->item(2)->nodeValue,
-                        'state' => $cols->item(3)->nodeValue,
-                        'cep' => $cols->item(4)->nodeValue,
-                        'result' => 1,
-                        'result_text' => Yii::t('wb_correios', 'Address found.'),
-                    ];
-                }
-            }
-        }
-
-        return $output;
-    }
-
-    /**
      * Search address by CEP
      * @param string $q query
      * @return array
@@ -67,23 +33,36 @@ class AddressSearchByCep extends AddressSearchBase
         $validator = new CepValidator();
 
         if ($validator->validate($cep, $error) === false) {
-             return [
+            return [
                 'result' => 0,
                 'result_text' => $error
             ];
         }
 
-        $params = array_merge([$this->formData['TipoConsulta'] => $cep], $this->formData);
-        $streamContextOptions = [
-            'http' => [
-               'method' => 'POST',
-               'header' => 'Content-type: application/x-www-form-urlencoded',
-               'content' => http_build_query($params)
-            ]
+        $output = [
+            'result' => 0,
+            'result_text' => Yii::t('wb_correios', 'Address not found.')
         ];
 
-        $streamContext = stream_context_create($streamContextOptions);
-        $html = @file_get_contents(self::URL_CORREIOS, false, $streamContext);
-        return $this->parseHTML($html);
+        try {
+            $soapClient = $this->getSoapClient();
+            $soapClientResult = $soapClient->consultaCEP(['cep' => $cep]);
+            $output = [
+                'location' => $soapClientResult->return->end,
+                'district' => $soapClientResult->return->bairro,
+                'city' => $soapClientResult->return->cidade,
+                'state' => $soapClientResult->return->uf,
+                'cep' => $cep,
+                'result' => 1,
+                'result_text' => Yii::t('wb_correios', 'Address found.'),
+            ];
+        } catch (SoapFault $fault) {
+            $output = [
+                'result' => 0,
+                'result_text' => Yii::t('wb_correios', $fault->faultstring)
+            ];
+        }
+
+        return $output;
     }
 }

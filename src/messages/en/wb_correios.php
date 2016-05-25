@@ -17,8 +17,8 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
-    'Address found.' => 'Endereço encontrado.',
-    'Address not found.' => 'Endereço não encontrado.',
-    'CEP NAO ENCONTRADO' => 'Endereço não encontrado.',
-    'CEP invalid.' => 'CEP inválido.',
+    'Address found.' => 'Address found.',
+    'Address not found.' => 'Address not found.',
+    'CEP NAO ENCONTRADO' => 'Address not found.',
+    'CEP invalid.' => 'CEP invalid.',
 ];

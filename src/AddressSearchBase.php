@@ -9,6 +9,7 @@
 namespace wbraganca\correios;
 
 use Yii;
+use SoapClient;
 
 /**
  * Class AddressSearchBase is the base class for yii2-correios
@@ -17,31 +18,33 @@ use Yii;
  */
 abstract class AddressSearchBase
 {
-    const URL_CORREIOS = 'http://www.buscacep.correios.com.br/servicos/dnec/consultaEnderecoAction.do';
     /**
-     * @var array data sent in request
+     * @var string
      */
-    protected $formDataDefaultValues = [
-        'TipoCep' => 'ALL',
-        'semelhante' => 'N',
-        'cfm' => '1',
-        'Metodo' => 'listaLogradouro',
-        'TipoConsulta' => 'relaxation',
-        'StartRow' => '1',
-        'EndRow' => '10'
-    ];
+    public $wsdl = 'https://apps.correios.com.br/SigepMasterJPA/AtendeClienteService/AtendeCliente?wsdl';
     /**
-     * @var array data sent in request
+     * @var SoapClient
      */
-    public $formData = [];
+    private $_soapClient;
 
     /**
      * @param array $formData
      */
-    public function __construct($formData = [])
+    public function __construct()
     {
-        $this->formData = array_merge($this->formDataDefaultValues, $formData);
         $this->initI18N();
+    }
+
+    /**
+     * @return SoapClient
+     */
+    protected function getSoapClient()
+    {
+        if (!isset($this->_soapClient)) {
+            $this->_soapClient = new SoapClient($this->wsdl);
+        }
+
+        return $this->_soapClient;
     }
 
     /**

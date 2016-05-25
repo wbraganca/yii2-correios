@@ -9,7 +9,7 @@ class AddressSearchByCepTest extends \PHPUnit_Framework_TestCase
     public function testValidCep()
     {
         $expected = [
-            'location' => 'Avenida Atlântica - de 1662 a 2172 - lado pa',
+            'location' => 'Avenida Atlântica',
             'district' => 'Copacabana',
             'city' => 'Rio de Janeiro',
             'state' => 'RJ',
@@ -32,6 +32,18 @@ class AddressSearchByCepTest extends \PHPUnit_Framework_TestCase
 
         $obj = new AddressSearchByCep();
         $result = $obj->search('000000');
+        $this->assertEquals($expected, $result);
+    }
+
+    public function testCEPNotFound()
+    {
+        $expected = [
+            'result' => 0,
+            'result_text' => 'Address not found.'
+        ];
+
+        $obj = new AddressSearchByCep();
+        $result = $obj->search('24010500');
         $this->assertEquals($expected, $result);
     }
 }
