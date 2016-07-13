@@ -16,7 +16,7 @@ $ composer require wbraganca/yii2-correios
 or add
 
 ```
-"wbraganca/yii2-correios": "*"
+"wbraganca/yii2-correios": "dev-master"
 ```
 
 to the require section of your `composer.json` file.
