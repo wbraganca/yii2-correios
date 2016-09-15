@@ -57,4 +57,4 @@ public function actions()
     ];
 }
 ```
-http:://example.com/your-controller/searchAddress?cep=22021-001
+http://example.com/index.php?r=your-controller/searchAddress&cep=22021-001
